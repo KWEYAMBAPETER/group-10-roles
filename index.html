@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML2 — CNN C++ Library Execution Plan & Roadmap</title>
+<style>
+  :root {
+    --primary: #0f172a;
+    --primary-accent: #1e3a8a;
+    --brand-blue: #0284c7;
+    --brand-bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #cbd5e1;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --code-bg: #0f172a;
+    --code-text: #38bdf8;
+    --success-border: #16a34a;
+    --warning-bg: #fffbeeb;
+    --warning-border: #f59e0b;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-main);
+    background-color: var(--brand-bg);
+    line-height: 1.5;
+    margin: 0;
+    padding: 24px 12px;
+  }
+
+  .container {
+    max-width: 1150px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.05);
+  }
+
+  /* Portal Action Header */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .badge-main {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 8.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-print {
+    background-color: var(--primary-accent);
+    color: white;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9.5pt;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+  }
+
+  .btn-print:hover { background-color: #1d4ed8; }
+
+  /* Header Section */
+  .header {
+    border-bottom: 3px solid var(--primary-accent);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+
+  .header h1 {
+    font-size: 22pt;
+    color: var(--primary);
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+  }
+
+  .header h2 {
+    font-size: 13pt;
+    color: var(--brand-blue);
+    margin: 0 0 14px 0;
+    font-weight: 600;
+  }
+
+  .header .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    background: var(--brand-bg);
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 9pt;
+  }
+
+  h3 {
+    font-size: 12pt;
+    color: var(--primary-accent);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 36px;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Syllabus Topics List Grid */
+  .syllabus-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .syllabus-item {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--brand-blue);
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 8.5pt;
+  }
+
+  .syllabus-item strong {
+    color: var(--primary-accent);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Dynamic Tab Navigation */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    padding: 12px 20px;
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .tab-btn:hover { color: var(--primary-accent); }
+
+  .tab-btn.active {
+    color: var(--primary-accent);
+    border-bottom-color: var(--primary-accent);
+    background-color: #f1f5f9;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .tab-content {
+    display: none;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .tab-content.active { display: block; }
+
+  /* Member Task Card Layout Inside Weeks */
+  .member-task-card {
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--primary-accent);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  .member-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed var(--border);
+    padding-bottom: 8px;
+  }
+
+  .member-name {
+    font-weight: 800;
+    font-size: 11pt;
+    color: var(--primary-accent);
+  }
+
+  .reviewer-badge {
+    font-size: 8pt;
+    background-color: #e2e8f0;
+    color: var(--text-main);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    font-size: 8.5pt;
+  }
+
+  .task-box {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 4px;
+  }
+
+  .task-box strong {
+    color: var(--brand-blue);
+    display: block;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-size: 8pt;
+    letter-spacing: 0.5px;
+  }
+
+  ul {
+    margin: 4px 0 0 16px;
+    padding: 0;
+    font-size: 8.5pt;
+  }
+
+  li { margin-bottom: 4px; }
+
+  code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 8pt;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border: 1px solid #cbd5e1;
+  }
+
+  /* Table Styling */
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    margin: 14px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f1f5f9;
+    color: var(--primary-accent);
+    padding: 10px 12px;
+    font-weight: 700;
+    border-bottom: 2px solid var(--border);
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td { background-color: #f8fafc; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+
+  .info-box {
+    background: var(--brand-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: 8.5pt;
+  }
+
+  .info-box h4 {
+    margin: 0 0 6px 0;
+    color: var(--primary-accent);
+    font-size: 9pt;
+    text-transform: uppercase;
+  }
+
+  /* PRINT / SAVE PDF STYLES */
+  @media print {
+    body { background: #fff; padding: 0; font-size: 8pt; }
+    .container { box-shadow: none; padding: 0; max-width: 100%; }
+    .top-bar, .tabs { display: none !important; }
+    .tab-content { display: block !important; margin-bottom: 24px; border: 1px solid #cbd5e1; page-break-inside: avoid; }
+    .member-task-card { page-break-inside: avoid; border: 1px solid #cbd5e1; background: #fff; }
+    .print-only-heading { display: block !important; font-weight: bold; color: var(--primary-accent); font-size: 12pt; margin-bottom: 12px; }
+    @page { size: A4; margin: 8mm; }
+  }
+
+  .print-only-heading { display: none; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Top Portal Action Bar -->
+  <div class="top-bar">
+    <span class="badge-main">Machine Learning 2 — C++ Library Project Blueprint</span>
+    <button class="btn-print" onclick="window.print()">🖨️ Save / Print Full Project PDF</button>
+  </div>
+
+  <!-- Document Header -->
+  <div class="header">
+    <h1>Machine Learning 2 — Final Group Work Plan</h1>
+    <h2>Reusable Convolutional Neural Network (CNN) Library in C++</h2>
+    <div class="meta-grid">
+      <div><strong>Final Project Deadline:</strong> Nov 5, 2026</div>
+      <div><strong>Week 1 Interface Freeze:</strong> Oct 4, 2026 (23:59 EAT)</div>
+      <div><strong>Standard & Build Tools:</strong> C++17 Standard / Root CMake</div>
+      <div><strong>Folder Layout:</strong> <code>include/</code>, <code>src/</code>, <code>tests/</code>, <code>examples/</code></div>
+    </div>
+  </div>
+
+  <!-- Syllabus Mapping Section -->
+  <h3>1. Required ML2 Course Syllabus Coverage</h3>
+  <div class="syllabus-grid">
+    <div class="syllabus-item">
+      <strong>1. Image Loading & Preprocessing</strong>
+      Handled by Peter (ImageLoader, RGB scaling, normalization, path checks).
+    </div>
+    <div class="syllabus-item">
+      <strong>2. Tensor Operations & Representation</strong>
+      Handled by Agatha (Dynamic multi-dim indexing, memory safety, checks).
+    </div>
+    <div class="syllabus-item">
+      <strong>3. 2D Convolution Operation</strong>
+      Handled by Allan Mugarura (2D Conv filters, sliding windows, accumulation).
+    </div>
+    <div class="syllabus-item">
+      <strong>4. Padding & Strides</strong>
+      Handled by Jeremie (Zero-padding borders, stride step constraint loops).
+    </div>
+    <div class="syllabus-item">
+      <strong>5. Activation Functions</strong>
+      Handled by Jeremie (Element-wise ReLU, Sigmoid, LeakyReLU mappings).
+    </div>
+    <div class="syllabus-item">
+      <strong>6. Max & Average Pooling</strong>
+      Handled by Nats JoJo (Spatial window reduction, max/average filters).
+    </div>
+    <div class="syllabus-item">
+      <strong>7. Fully Connected (Dense) Layer</strong>
+      Handled by Edrine Mugenyi (Tensor flattening, weight matrix multiply).
+    </div>
+    <div class="syllabus-item">
+      <strong>8. Softmax & Cross-Entropy Loss</strong>
+      Handled by Edrine Mugenyi (Probability distribution, loss calculation).
+    </div>
+    <div class="syllabus-item">
+      <strong>9. Prediction, Evaluation & Routing</strong>
+      Handled by Frank (Pipeline integration) & Sempewo Evarita (Dimension verifier).
+    </div>
+  </div>
+
+  <!-- Oversight Chain Summary Matrix -->
+  <h3>2. Oversight & Code Review Governance Matrix</h3>
+  <div class="table-responsive">
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Role</th>
+          <th>Core Technical C++ Responsibility</th>
+          <th>Assigned Supervisor / PR Reviewer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frank</strong></td>
+          <td>Team Lead</td>
+          <td>Architecture, modular integration, and training pipeline execution.</td>
+          <td><strong>Peter</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Peter</strong></td>
+          <td>Ops & Risk Lead</td>
+          <td>Image loading, preprocessing pipelines, and risk monitoring.</td>
+          <td><strong>Frank</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Agatha</strong></td>
+          <td>Core Developer</td>
+          <td>Multidimensional Tensor structures, indexing, and numerical safety.</td>
+          <td><strong>Allan Mugarura</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Allan Mugarura</strong></td>
+          <td>Core Developer</td>
+          <td>2D Convolution operations, kernel manipulation, and feature extraction.</td>
+          <td><strong>Jeremie</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Jeremie</strong></td>
+          <td>Core Developer</td>
+          <td>Zero-padding logic, stride constraints, and activation functions.</td>
+          <td><strong>Nats JoJo</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Nats JoJo</strong></td>
+          <td>Core Developer</td>
+          <td>Max Pooling and Average Pooling window reduction kernels.</td>
+          <td><strong>Sempewo Evarita</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Edrine Mugenyi</strong></td>
+          <td>Core Developer</td>
+          <td>Fully Connected (Dense) layer, Softmax, Cross-Entropy & evaluation.</td>
+          <td><strong>Peter</strong></td>
+        </tr>
+        <tr>
+          <td><strong>Sempewo Evarita</strong></td>
+          <td>Core Developer</td>
+          <td>Dynamic workflow routing, matrix dimension verification & integration tests.</td>
+          <td><strong>Agatha</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Interactive 4-Week Chronological Roadmap -->
+  <h3>3. Chronological 4-Week Step-by-Step Task Schedule</h3>
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(event, 'week1')">Week 1 (Oct 1–4): Interfaces</button>
+    <button class="tab-btn" onclick="switchTab(event, 'week2')">Week 2 (Oct 5–11): Core Logic</button>
+    <button class="tab-btn" onclick="switchTab(event, 'week3')">Week 3 (Oct 12–18): Layers & Loss</button>
+    <button class="tab-btn" onclick="switchTab(event, 'week4')">Week 4 (Oct 19–Nov 5): Integration</button>
+  </div>
+
+  <!-- WEEK 1 CONTENT -->
+  <div id="week1" class="tab-content active">
+    <div class="print-only-heading">Week 1 (Oct 1–4): Header Definitions, Public Interfaces & Build Setup</div>
+    <p style="font-size: 8.5pt; color: var(--text-muted); margin-bottom: 14px;">
+      <b>Strict Milestone Requirement:</b> All public C++ headers in <code>include/</code> must be frozen and pushed before <b>Sunday, Oct 4 at 23:59 EAT</b>. Code must compile without warnings using CMake.
+    </p>
+
+    <!-- Frank W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Frank — Team Lead & Architecture Specialist</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li>Root <code>CMakeLists.txt</code> (Set <code>-Wall -Wextra -pedantic</code>).</li>
+            <li>Folder layout: <code>include/</code>, <code>src/</code>, <code>tests/</code>, <code>examples/</code>, <code>reports/</code>.</li>
+            <li><code>include/cnn/cnn_pipeline.hpp</code> (Pipeline signature).</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare global high-level <code>CNNPipeline</code> class layout.</li>
+            <li>Establish layer connection contracts for forward passes.</li>
+            <li>Verify clean warning-free build setup across development machines.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze public header interface contracts.</li>
+            <li>Log local compilation logs in <code>reports/week-01.md</code>.</li>
+            <li>Review and merge Peter's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peter W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Peter — Operations, Risk Lead & Image Preprocessing</span>
+        <span class="reviewer-badge">Supervisor: Frank</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/image_loader.hpp</code></li>
+            <li><code>tests/test_image_loader.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare <code>ImageLoader</code> class & image loading prototypes.</li>
+            <li>Define signature checks for invalid, empty, or corrupted path strings.</li>
+            <li>Set up Ops monitoring workflow for team pull requests.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Submit header file for <code>ImageLoader</code>.</li>
+            <li>Log verification & AI usage in <code>reports/week-01.md</code>.</li>
+            <li>Review Frank's and Edrine's incoming PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agatha W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Agatha — Tensor Math & Numerical Safety Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Allan Mugarura</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/tensor.hpp</code></li>
+            <li><code>tests/test_tensor.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare dynamic N-dimensional <code>Tensor</code> class layout.</li>
+            <li>Define row/column indexing, shape queries, and dimension assertions.</li>
+            <li>Declare guard functions for NaN and Infinity checks.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze dynamic <code>Tensor</code> class header.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Sempewo Evarita's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allan W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Allan Mugarura — 2D Convolution Kernel Developer</span>
+        <span class="reviewer-badge">Supervisor: Jeremie</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/conv2d.hpp</code></li>
+            <li><code>tests/test_conv2d.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare <code>Conv2D</code> forward pass filter class signatures.</li>
+            <li>Define kernel dimension parameters, channels, and output calculators.</li>
+            <li>Ensure no implementation logic leaks into headers.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze <code>Conv2D</code> class declarations in <code>include/</code>.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Agatha's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jeremie W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Jeremie — Strides, Padding & Activations Developer</span>
+        <span class="reviewer-badge">Supervisor: Nats JoJo</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/activations.hpp</code></li>
+            <li><code>include/cnn/padding.hpp</code></li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare spatial zero-padding border function signatures.</li>
+            <li>Declare stride constraint loops and parameter checking functions.</li>
+            <li>Outline signatures for ReLU, Sigmoid, and LeakyReLU activations.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze activation and padding interface declarations.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Allan Mugarura's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nats JoJo W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Nats JoJo — Spatial Pooling Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Sempewo Evarita</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/pooling.hpp</code></li>
+            <li><code>tests/test_pooling.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Declare class signatures for <code>MaxPooling2D</code> and <code>AveragePooling2D</code>.</li>
+            <li>Define spatial reduction window size and stride parameters.</li>
+            <li>Set up spatial dimension formulas in interface declarations.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze pooling headers in <code>include/</code>.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Jeremie's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edrine W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Edrine Mugenyi — Dense Layer, Softmax & Loss Developer</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/dense_loss.hpp</code></li>
+            <li><code>tests/test_dense_loss.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Map foundational class layouts for Dense fully connected layers.</li>
+            <li>Declare signatures for Softmax activation probability calculation.</li>
+            <li>Define CrossEntropyLoss and accuracy calculation class interfaces.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze dense layer, softmax, and loss interfaces.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Frank's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sempewo W1 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Sempewo Evarita — Dynamic Routing & Integration Verifier</span>
+        <span class="reviewer-badge">Supervisor: Agatha</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Files & Interfaces to Commit</strong>
+          <ul>
+            <li><code>include/cnn/routing_verifier.hpp</code></li>
+            <li><code>tests/test_routing.cpp</code> (stubs)</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Specific Technical Scope</strong>
+          <ul>
+            <li>Construct global abstract tracking logs and dimension verifiers.</li>
+            <li>Define cross-module shape verification class signatures.</li>
+            <li>Set up multi-threaded stability verification stubs.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverable & Report Target</strong>
+          <ul>
+            <li>Freeze dynamic routing & verifier headers.</li>
+            <li>Submit report in <code>reports/week-01.md</code>.</li>
+            <li>Review Nats JoJo's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 2 CONTENT -->
+  <div id="week2" class="tab-content">
+    <div class="print-only-heading">Week 2 (Oct 5–11): Core Tensor Math & Data Preprocessing Logic</div>
+    <p style="font-size: 8.5pt; color: var(--text-muted); margin-bottom: 14px;">
+      <b>Milestone Requirement:</b> Implement core algorithms in <code>src/</code>. Write individual unit tests in <code>tests/</code> verifying normal math execution and small hand-calculated reference matrices.
+    </p>
+
+    <!-- Frank W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Frank — Team Lead & Architecture Specialist</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement C++ logic in <code>src/cnn_pipeline.cpp</code> connecting basic layer data paths.</li>
+            <li>Code pipeline state transitions and flow management.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Verify pipeline stability when initialized with mock layer components.</li>
+            <li>Check memory safety during state transitions.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/pipeline-core</code>.</li>
+            <li>Log attributable code in <code>reports/week-02.md</code>.</li>
+            <li>Review and merge approved PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peter W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Peter — Operations, Risk Lead & Image Preprocessing</span>
+        <span class="reviewer-badge">Supervisor: Frank</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Write <code>src/image_loader.cpp</code> to decode raw images into Tensors.</li>
+            <li>Code RGB pixel normalization [0, 1] and scaling logic.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests in <code>tests/test_image_loader.cpp</code> for non-existent files.</li>
+            <li>Test corrupt image payloads and mismatched channel sizes.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/image-loader</code>.</li>
+            <li>Audit repository for broken builds and memory risks.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agatha W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Agatha — Tensor Math & Numerical Safety Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Allan Mugarura</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement <code>src/tensor.cpp</code> memory allocation and dynamic indexing.</li>
+            <li>Code tensor addition, scalar multiplication, and slicing.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests for incompatible matrix shape operations.</li>
+            <li>Test boundary value index access assertions.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/tensor-math</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Sempewo Evarita's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allan W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Allan Mugarura — 2D Convolution Kernel Developer</span>
+        <span class="reviewer-badge">Supervisor: Jeremie</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement <code>src/conv2d.cpp</code> forward pass convolution operations.</li>
+            <li>Code filter sliding windows and feature accumulation loops.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Author unit tests using small $3 \times 3$ hand-calculated reference matrices.</li>
+            <li>Verify convolution math precision manually.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/conv2d-kernel</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Agatha's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jeremie W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Jeremie — Strides, Padding & Activations Developer</span>
+        <span class="reviewer-badge">Supervisor: Nats JoJo</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement spatial zero-padding expansion around input tensors.</li>
+            <li>Code stride parameter traversal step jumps across dimensions.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Test varying stride/padding combinations.</li>
+            <li>Verify correct spatial height/width output calculations.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/padding-strides</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Allan Mugarura's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nats JoJo W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Nats JoJo — Spatial Pooling Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Sempewo Evarita</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement <code>MaxPooling2D</code> sliding regional maximum calculations in <code>src/pooling.cpp</code>.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests comparing max pooling output against reference matrices.</li>
+            <li>Test invalid window sizes larger than input tensor.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/max-pooling</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Jeremie's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edrine W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Edrine Mugenyi — Dense Layer, Softmax & Loss Developer</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement Fully Connected (Dense) layer vector matrix multiplication in <code>src/dense_loss.cpp</code>.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests for tensor flattening and weight vector multiplication.</li>
+            <li>Verify matrix dimension consistency checks.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/dense-layer</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Frank's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sempewo W2 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Sempewo Evarita — Dynamic Routing & Integration Verifier</span>
+        <span class="reviewer-badge">Supervisor: Agatha</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement dimension consistency verifiers checking dynamic shapes between adjacent processing nodes.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests triggering intentional shape mismatch assertions.</li>
+            <li>Validate error recovery flags.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/dimension-verifier</code>.</li>
+            <li>Submit report in <code>reports/week-02.md</code>.</li>
+            <li>Review Nats JoJo's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 3 CONTENT -->
+  <div id="week3" class="tab-content">
+    <div class="print-only-heading">Week 3 (Oct 12–18): Layers, Pooling, Activations & Loss Integration</div>
+    <p style="font-size: 8.5pt; color: var(--text-muted); margin-bottom: 14px;">
+      <b>Milestone Requirement:</b> Complete feature map reduction, activations, classification layers, and loss routines. Execute multi-module integration tests in <code>tests/</code>.
+    </p>
+
+    <!-- Frank W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Frank — Team Lead & Architecture Specialist</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Connect Convolution, Activation, Pooling, Dense, and Loss stages into unified forward pipeline flow.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Run pipeline integration tests asserting correct shape transformations across layer boundaries.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/pipeline-integration</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review and merge approved PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peter W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Peter — Operations, Risk Lead & Image Preprocessing</span>
+        <span class="reviewer-badge">Supervisor: Frank</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Refine image loading utilities to feed normalized tensors directly into Convolution layers.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Execute boundary dimension checks for non-square and single-channel grayscale images.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/image-preprocessing-final</code>.</li>
+            <li>Perform risk check for memory stability.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agatha W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Agatha — Tensor Math & Numerical Safety Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Allan Mugarura</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Code safeguards against numerical instabilities (NaN checks, infinity clamping, division-by-zero guards).</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests feeding extreme zero and near-infinity floating-point values into dynamic tensors.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/numerical-safety</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Sempewo Evarita's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allan W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Allan Mugarura — 2D Convolution Kernel Developer</span>
+        <span class="reviewer-badge">Supervisor: Jeremie</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Optimize multi-channel filter accumulation and output spatial size calculations in <code>Conv2D</code>.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Test multi-kernel 2D convolution passes across RGB inputs. Verify against reference output tensors.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/conv2d-multichannel</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Agatha's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jeremie W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Jeremie — Strides, Padding & Activations Developer</span>
+        <span class="reviewer-badge">Supervisor: Nats JoJo</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement element-wise activation functions (ReLU, Sigmoid, LeakyReLU) and tensor mapping routines.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Write unit tests verifying activation output behavior on negative, zero, and boundary inputs.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/activations-core</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Allan Mugarura's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nats JoJo W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Nats JoJo — Spatial Pooling Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Sempewo Evarita</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement <code>AveragePooling2D</code> local window average calculation algorithms.</li>
+            <li>Code odd-sized input border handling.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Test average pooling against hand-calculated matrices and verify spatial dimension reduction formulas.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/average-pooling</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Jeremie's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edrine W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Edrine Mugenyi — Dense Layer, Softmax & Loss Developer</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Code numerically stable <code>Softmax</code> probability layer and <code>CrossEntropyLoss</code> functions.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Test logit numerical stability when handling large scores. Verify loss calculation precision.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/softmax-loss</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Frank's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sempewo W3 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Sempewo Evarita — Dynamic Routing & Integration Verifier</span>
+        <span class="reviewer-badge">Supervisor: Agatha</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement dynamic workflow routing components managing data transfers across layers.</li>
+            <li>Set up multi-threaded environment tests.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Testing & Edge Cases</strong>
+          <ul>
+            <li>Run automated regression testing scripts asserting system stability under full forward passes.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Deliverables & Review</strong>
+          <ul>
+            <li>Submit PR <code>feature/workflow-routing</code>.</li>
+            <li>Submit report in <code>reports/week-03.md</code>.</li>
+            <li>Review Nats JoJo's PRs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 4 CONTENT -->
+  <div id="week4" class="tab-content">
+    <div class="print-only-heading">Week 4 (Oct 19–Nov 5): Full System Integration, Demonstrations & Final Audit</div>
+    <p style="font-size: 8.5pt; color: var(--text-muted); margin-bottom: 14px;">
+      <b>Final Milestone Requirement:</b> Complete end-to-end network integration in <code>examples/</code>. Execute Valgrind memory leak checks, finalize hand-typed <code>README.md</code>, and prepare for oral technical defense before <b>November 5, 2026</b>.
+    </p>
+
+    <!-- Frank W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Frank — Team Lead & Architecture Specialist</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Author complete runnable pipeline demonstrations in <code>examples/cnn_demo.cpp</code>.</li>
+            <li>Manage final Git pull requests and resolve merge conflicts.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Execute clean-environment build tests on fresh machines using CMake.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Submit <code>reports/final-report.md</code> and verify final repository hand-in.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peter W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Peter — Operations, Risk Lead & Image Preprocessing</span>
+        <span class="reviewer-badge">Supervisor: Frank</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Provide end-to-end example showing image loading and preprocessing feeding into the CNN pipeline.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Run Valgrind memory leak audits across full execution runs. Check boundary limits.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Finalize Ops & Risk audit section in <code>reports/final-report.md</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Agatha W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Agatha — Tensor Math & Numerical Safety Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Allan Mugarura</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Verify all Tensor mathematical transformation unit tests pass without memory leaks.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Audit numerical stability safeguards across full CNN execution passes.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Document Tensor library usage in <code>README.md</code> and log AI-use declarations.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Allan W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Allan Mugarura — 2D Convolution Kernel Developer</span>
+        <span class="reviewer-badge">Supervisor: Jeremie</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Provide a simple example or test fixture demonstrating 2D Convolution filter operations.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Verify strict header/implementation separation for all convolution modules.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Finalize 2D Convolution documentation section and commit test logs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jeremie W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Jeremie — Strides, Padding & Activations Developer</span>
+        <span class="reviewer-badge">Supervisor: Nats JoJo</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Document expected input/output behaviors and boundary conditions of padding and activation functions.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Verify that invalid stride/padding settings trigger clean assertions without crashes.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Complete activation and padding contribution documentation in <code>README.md</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nats JoJo W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Nats JoJo — Spatial Pooling Core Developer</span>
+        <span class="reviewer-badge">Supervisor: Sempewo Evarita</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Provide executable example demonstrating both Max Pooling and Average Pooling operations.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Verify spatial window reduction behavior on odd-sized input matrix edge cases.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Document pooling operations and update unit test suite.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edrine W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Edrine Mugenyi — Dense Layer, Softmax & Loss Developer</span>
+        <span class="reviewer-badge">Supervisor: Peter</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Implement prediction/evaluation utilities (accuracy, precision, confusion matrix).</li>
+            <li>Provide classification demonstration example.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Verify Softmax probability outputs sum to 1.0 across extreme numerical inputs.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Finalize evaluation documentation and commit full unit test suite.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sempewo W4 -->
+    <div class="member-task-card">
+      <div class="member-card-header">
+        <span class="member-name">Sempewo Evarita — Dynamic Routing & Integration Verifier</span>
+        <span class="reviewer-badge">Supervisor: Agatha</span>
+      </div>
+      <div class="task-grid">
+        <div class="task-box">
+          <strong>Implementation Tasks</strong>
+          <ul>
+            <li>Execute multi-threaded environment stability tests and automated regression checking scripts.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Audit & Verification</strong>
+          <ul>
+            <li>Verify pipeline execution state transitions and memory safety across full training runs.</li>
+          </ul>
+        </div>
+        <div class="task-box">
+          <strong>Final Deliverable</strong>
+          <ul>
+            <li>Commit automated regression suite and verify continuous integration setup.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mandatory Team Governance Protocol -->
+  <h3>4. Mandatory Quality & Review Governance Rules</h3>
+  <div class="grid-2">
+    <div class="info-box">
+      <h4>Git & PR Protocols</h4>
+      <ul>
+        <li>Direct commits to <code>main</code> are forbidden[cite: 38]. Work strictly on assigned branches (e.g., <code>feature/conv2d</code>)[cite: 38, 50].</li>
+        <li><b>No Self-Merging:</b> Developers cannot merge their own code[cite: 38, 50]. The assigned supervisor must inspect the code, verify unit tests, and approve the PR[cite: 38, 50].</li>
+        <li>Frank merges approved PRs; Peter audits integrated builds for memory safety and risk[cite: 38, 50].</li>
+      </ul>
+    </div>
+    <div class="info-box">
+      <h4>AI Usage & README Rules</h4>
+      <ul>
+        <li>AI tools may only serve as supporting aids; AI must not generate the whole project[cite: 38, 53].</li>
+        <li>Every member must log tool name, purpose, and technical justification in weekly reports[cite: 38, 53].</li>
+        <li>The project <code>README.md</code> and C++ logic must be original engineering work[cite: 38, 53].</li>
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* Switch Week Schedule Tabs */
+  function switchTab(evt, tabId) {
+    const tabContents = document.getElementsByClassName("tab-content");
+    for (let i = 0; i < tabContents.length; i++) {
+      tabContents[i].classList.remove("active");
+    }
+
+    const tabBtns = document.getElementsByClassName("tab-btn");
+    for (let i = 0; i < tabBtns.length; i++) {
+      tabBtns[i].classList.remove("active");
+    }
+
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.classList.add("active");
+  }
+</script>
+
+</body>
+</html>
